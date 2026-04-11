@@ -1,5 +1,5 @@
 # PrepAI — AI Mock Interview Assistant
-### by Clonigue
+### By Clonigue
 
 PrepAI is a desktop-based AI-powered mock interview assistant that helps 
 you practice technical interviews with real-time voice recognition, 
