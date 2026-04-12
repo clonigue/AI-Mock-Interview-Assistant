@@ -23,7 +23,7 @@ facial expression analysis, and detailed performance reports.
 - CustomTkinter (GUI)
 - Whisper (Voice Recognition)
 - DeepFace + FER (Facial Analysis)
-- Gemini API (Question Generation + Scoring)
+- GROQ API (Question Generation + Scoring)
 - ReportLab (PDF Reports)
 
 ## Status
