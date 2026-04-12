@@ -47,7 +47,8 @@ Return ONLY the question, nothing else. No numbering, no explanation."""
 
 def generate_question(domain, asked_questions=[]):
     """
-    Generate a single interview question for the given domain.
+    Generate a single SHORT and SIMPLE interview question for a beginner level candidate.
+    The question must be one sentence only, clear and concise.
     Avoids repeating questions already asked in this session.
     """
     try:

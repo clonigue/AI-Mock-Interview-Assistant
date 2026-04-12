@@ -35,14 +35,14 @@ class DomainScreen(ctk.CTkFrame):
             text="Select Your Interview Domain",
             font=ctk.CTkFont(family="Arial", size=20, weight="bold"),
             text_color="#1A1A2E"
-        ).pack(pady=(40, 5))
+        ).pack(pady=(20, 5))
 
         ctk.CTkLabel(
             self,
             text="Choose a topic to begin your practice session",
             font=ctk.CTkFont(family="Arial", size=13),
             text_color="#666666"
-        ).pack(pady=(0, 30))
+        ).pack(pady=(0, 15))
 
         # ── Domain Buttons Grid ──────────────────
         grid_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -88,7 +88,7 @@ class DomainScreen(ctk.CTkFrame):
             text="Start Interview  →",
             font=ctk.CTkFont(family="Arial", size=16, weight="bold"),
             width=250,
-            height=55,
+            height=50,
             corner_radius=12,
             fg_color="#CCCCCC",
             hover_color="#CCCCCC",
@@ -96,7 +96,7 @@ class DomainScreen(ctk.CTkFrame):
             state="disabled",
             command=self.start_interview
         )
-        self.start_btn.pack(pady=30)
+        self.start_btn.pack(pady=10)
 
         # ── Footer ───────────────────────────────
         ctk.CTkLabel(
