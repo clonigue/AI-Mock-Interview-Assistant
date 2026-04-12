@@ -9,9 +9,9 @@ APP_NAME = "PrepAI"
 APP_VERSION = "1.0.0"
 AUTHOR = "Clonigue"
 
-# Gemini API
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = "gemini-1.5-flash"
+# Groq API
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 # Interview Settings
 QUESTIONS_PER_SESSION = 7
@@ -22,7 +22,9 @@ DOMAINS = [
     "Python",
     "DBMS & SQL",
     "Operating Systems",
-    "JavaScript"
+    "HTML & CSS",
+    "JavaScript",
+    "HR Interview"
 ]
 
 # Theme

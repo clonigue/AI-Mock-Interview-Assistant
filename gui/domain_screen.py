@@ -52,7 +52,9 @@ class DomainScreen(ctk.CTkFrame):
             "Python": "🐍",
             "DBMS & SQL": "🗄️",
             "Operating Systems": "💻",
-            "JavaScript": "⚡"
+            "JavaScript": "⚡",
+            "HTML & CSS": "🎨",
+            "HR Interview": "🤝"
         }
 
         row, col = 0, 0
