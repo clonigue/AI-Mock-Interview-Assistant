@@ -1,8 +1,11 @@
+import cv2
 import customtkinter as ctk
 import threading
 from config import QUESTIONS_PER_SESSION
 from core.question_engine import generate_question
 from core.voice_engine import VoiceRecorder
+from core.face_engine import FaceAnalyzer
+from PIL import Image
 
 class PlaceholderTextbox(ctk.CTkTextbox):
     def __init__(self, master, placeholder="", **kwargs):
@@ -52,13 +55,95 @@ class InterviewScreen(ctk.CTkFrame):
         self.answers = []
         self.recorder = VoiceRecorder()
         self.is_recording = False
+        self.face_analyzer = FaceAnalyzer()
+        self.webcam_active = False
 
         self.build_ui()
         self.after(100, self.load_next_question)
 
     def build_ui(self):
-        # ── Header ──────────────────────────────
-        header = ctk.CTkFrame(self, fg_color="#2B5CE6", corner_radius=0, height=70)
+        # ── Main Container ───────────────────────
+        # Left side — interview content
+        left_panel = ctk.CTkFrame(self, fg_color="#F0F4FF", corner_radius=0)
+        left_panel.pack(side="left", fill="both", expand=True)
+
+        # Right side — webcam preview
+        right_panel = ctk.CTkFrame(self, fg_color="#E8EFFF", corner_radius=0, width=220)
+        right_panel.pack(side="right", fill="y")
+        right_panel.pack_propagate(False)
+
+        # ── Webcam Panel ─────────────────────────
+        ctk.CTkLabel(
+            right_panel,
+            text="📷 Live Preview",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#2B5CE6"
+        ).pack(pady=(20, 5))
+
+        self.webcam_label = ctk.CTkLabel(
+            right_panel,
+            text="",
+            width=200,
+            height=150
+        )
+        self.webcam_label.pack(padx=10, pady=5)
+
+        # Webcam status
+        self.webcam_status = ctk.CTkLabel(
+            right_panel,
+            text="⏳ Starting camera...",
+            font=ctk.CTkFont(size=11),
+            text_color="#888888",
+            wraplength=180
+        )
+        self.webcam_status.pack(pady=5)
+
+        # Emotion display
+        ctk.CTkLabel(
+            right_panel,
+            text="Current Emotion:",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#1A1A2E"
+        ).pack(pady=(15, 2))
+
+        self.emotion_label = ctk.CTkLabel(
+            right_panel,
+            text="😐 Neutral",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color="#2B5CE6"
+        )
+        self.emotion_label.pack(pady=2)
+
+        # Tips
+        tips_frame = ctk.CTkFrame(
+            right_panel,
+            fg_color="white",
+            corner_radius=10,
+            border_width=1,
+            border_color="#D0D8F0"
+        )
+        tips_frame.pack(fill="x", padx=10, pady=15)
+
+        ctk.CTkLabel(
+            tips_frame,
+            text="💡 Tips",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#2B5CE6"
+        ).pack(anchor="w", padx=10, pady=(8, 2))
+
+        ctk.CTkLabel(
+            tips_frame,
+            text="• Look at the camera\n• Speak clearly\n• Stay confident\n• Take your time",
+            font=ctk.CTkFont(size=11),
+            text_color="#444444",
+            justify="left"
+        ).pack(anchor="w", padx=10, pady=(0, 8))
+
+        # ── Left Panel Content ───────────────────
+        # Header
+        header = ctk.CTkFrame(
+            left_panel, fg_color="#2B5CE6", corner_radius=0, height=70
+        )
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
 
@@ -89,24 +174,24 @@ class InterviewScreen(ctk.CTkFrame):
             command=self.end_interview
         ).place(relx=0.97, rely=0.5, anchor="e")
 
-        # ── Progress Bar ─────────────────────────
+        # Progress Bar
         self.progress_bar = ctk.CTkProgressBar(
-            self, height=8,
+            left_panel, height=8,
             fg_color="#D0D8F0",
             progress_color="#2B5CE6"
         )
         self.progress_bar.pack(fill="x", padx=20, pady=(15, 0))
         self.progress_bar.set(0)
 
-        # ── Question Card ────────────────────────
+        # Question Card
         card = ctk.CTkFrame(
-            self,
+            left_panel,
             fg_color="white",
             corner_radius=12,
             border_width=1,
             border_color="#E0E8FF"
         )
-        card.pack(fill="x", padx=30, pady=15)
+        card.pack(fill="x", padx=20, pady=15)
 
         ctk.CTkLabel(
             card,
@@ -120,34 +205,34 @@ class InterviewScreen(ctk.CTkFrame):
             text="⏳ Loading your question...",
             font=ctk.CTkFont(family="Arial", size=15),
             text_color="#1A1A2E",
-            wraplength=800,
+            wraplength=580,
             justify="left"
         )
         self.question_label.pack(anchor="w", padx=20, pady=(0, 20))
 
-        # ── Answer Label ─────────────────────────
+        # Answer Label
         ctk.CTkLabel(
-            self,
+            left_panel,
             text="Your Answer:",
             font=ctk.CTkFont(size=13, weight="bold"),
             text_color="#1A1A2E"
-        ).pack(anchor="w", padx=30)
+        ).pack(anchor="w", padx=20)
 
-        # ── Answer Box ───────────────────────────
+        # Answer Box
         self.answer_box = PlaceholderTextbox(
-            self,
+            left_panel,
             placeholder="Type your answer here...",
-            height=130,
+            height=120,
             corner_radius=12,
             border_width=1,
             border_color="#D0D8FF",
             font=ctk.CTkFont(family="Arial", size=13),
             fg_color="white",
         )
-        self.answer_box.pack(fill="x", padx=30, pady=(5, 10))
+        self.answer_box.pack(fill="x", padx=20, pady=(5, 10))
 
-        # ── Buttons ──────────────────────────────
-        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        # Buttons
+        btn_frame = ctk.CTkFrame(left_panel, fg_color="transparent")
         btn_frame.pack(pady=5)
 
         self.mic_btn = ctk.CTkButton(
@@ -180,9 +265,9 @@ class InterviewScreen(ctk.CTkFrame):
         )
         self.next_btn.grid(row=0, column=1, padx=10)
 
-        # ── Status ───────────────────────────────
+        # Status
         self.status_label = ctk.CTkLabel(
-            self,
+            left_panel,
             text="",
             font=ctk.CTkFont(size=11),
             text_color="#888888"
@@ -190,6 +275,9 @@ class InterviewScreen(ctk.CTkFrame):
         self.status_label.pack(pady=5)
 
     def load_next_question(self):
+        # Start webcam on first question
+        if self.current_question_num == 0 and not self.webcam_active:
+            self.start_webcam()
         self.next_btn.configure(state="disabled")
         self.status_label.configure(text="⏳ Generating question...")
         self.question_label.configure(text="⏳ Fetching your question from AI...")
@@ -319,13 +407,74 @@ class InterviewScreen(ctk.CTkFrame):
                 text=f"❌ Transcription failed. Please type your answer."
             )
 
+    def start_webcam(self):
+        """Start face analyzer and webcam preview."""
+        self.face_analyzer.start()
+        self.webcam_active = True
+        self.webcam_status.configure(text="✅ Camera active")
+        self._update_webcam_preview()
+
+    def stop_webcam(self):
+        """Stop face analyzer and webcam."""
+        self.webcam_active = False
+        self.face_analyzer.stop()
+
+    def _update_webcam_preview(self):
+        """Update webcam preview every 33ms (~30fps display)."""
+        if not self.webcam_active:
+            return
+        try:
+            frame = self.face_analyzer.get_frame()
+            if frame is not None:
+                # Convert BGR to RGB
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                # Resize to fit panel
+                frame_resized = cv2.resize(frame_rgb, (200, 150))
+
+                # Convert to PIL Image
+                img = Image.fromarray(frame_resized)
+                ctk_img = ctk.CTkImage(
+                    light_image=img,
+                    dark_image=img,
+                    size=(200, 150)
+                )
+                self.webcam_label.configure(image=ctk_img)
+                self.webcam_label.image = ctk_img
+
+                # Update emotion
+                emotion_log = self.face_analyzer.get_emotion_log()
+                if emotion_log:
+                    latest = emotion_log[-1]["emotion"]
+                    emoji_map = {
+                        "happy": "😊 Happy",
+                        "sad": "😢 Sad",
+                        "angry": "😠 Angry",
+                        "fear": "😨 Nervous",
+                        "surprise": "😲 Surprised",
+                        "disgust": "😒 Disgust",
+                        "neutral": "😐 Neutral",
+                        "confused": "😕 Confused"
+                    }
+                    self.emotion_label.configure(
+                        text=emoji_map.get(latest, "😐 Neutral")
+                    )
+        except Exception as e:
+            pass
+
+        self.after(33, self._update_webcam_preview)        
+
     def finish_interview(self):
+        self.stop_webcam()
         report_data = {
             "domain": self.domain,
             "total_questions": QUESTIONS_PER_SESSION,
-            "answers": self.answers
+            "answers": self.answers,
+            "emotion_log": self.face_analyzer.get_emotion_log(),
+            "dominant_emotion": self.face_analyzer.get_dominant_emotion()
         }
         self.parent.show_report_screen(report_data)
 
     def end_interview(self):
+        self.stop_webcam()
         self.parent.show_domain_screen()

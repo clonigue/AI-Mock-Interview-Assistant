@@ -7,7 +7,7 @@ class MainWindow(ctk.CTk):
 
         # Window settings
         self.title("PrepAI — AI Mock Interview Assistant")
-        self.geometry("900x600")
+        self.geometry("1100x650")
         self.resizable(False, False)
 
         # Center window on screen
@@ -21,8 +21,8 @@ class MainWindow(ctk.CTk):
 
     def center_window(self):
         self.update_idletasks()
-        width = 900
-        height = 600
+        width = 1100
+        height = 650
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f"{width}x{height}+{x}+{y}")
