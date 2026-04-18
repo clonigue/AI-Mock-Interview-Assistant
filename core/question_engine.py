@@ -42,6 +42,13 @@ Generate a single interview question to assess the candidate's soft skills.
 Topics can include: self introduction, confidence, leadership, teamwork,
 strengths, weaknesses, career goals, conflict resolution, or situational judgment.
 The question should be conversational and open-ended.
+Return ONLY the question, nothing else. No numbering, no explanation.""",
+
+    "⚡ Demo Mode": """You are a friendly host doing a casual introduction interview.
+Generate a single simple personal question to get to know the person better.
+Topics: name, hometown, hobbies, favorite food, favorite movie, interests,
+favorite subject, dream job, favorite sport, or fun facts about themselves.
+Keep it very short, casual and friendly.
 Return ONLY the question, nothing else. No numbering, no explanation."""
 }
 
@@ -141,7 +148,16 @@ FALLBACK_QUESTIONS = {
         "How do you handle pressure and tight deadlines?",
         "Tell me about a time you resolved a conflict in a team.",
         "Why should we hire you over other candidates?",
-    ]
+    ],
+    "⚡ Demo Mode": [
+        "What is your name and where are you from?",
+        "What are your hobbies and interests?",
+        "What is your favorite subject in school or college?",
+        "What is your dream job and why?",
+        "What do you like to do in your free time?",
+        "What is your favorite movie or TV show?",
+        "What sport or game do you enjoy the most?",
+    ],
 }
 
 def get_fallback_question(domain, asked_questions=[]):

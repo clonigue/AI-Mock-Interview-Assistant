@@ -24,7 +24,8 @@ DOMAINS = [
     "Operating Systems",
     "HTML & CSS",
     "JavaScript",
-    "HR Interview"
+    "HR Interview",
+    "⚡ Demo Mode"
 ]
 
 # Theme

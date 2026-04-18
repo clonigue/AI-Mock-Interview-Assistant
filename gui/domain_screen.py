@@ -35,14 +35,14 @@ class DomainScreen(ctk.CTkFrame):
             text="Select Your Interview Domain",
             font=ctk.CTkFont(family="Arial", size=20, weight="bold"),
             text_color="#1A1A2E"
-        ).pack(pady=(20, 5))
+        ).pack(pady=(10, 5))
 
         ctk.CTkLabel(
             self,
             text="Choose a topic to begin your practice session",
             font=ctk.CTkFont(family="Arial", size=13),
             text_color="#666666"
-        ).pack(pady=(0, 15))
+        ).pack(pady=(0, 10))
 
         # ── Domain Buttons Grid ──────────────────
         grid_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -54,7 +54,8 @@ class DomainScreen(ctk.CTkFrame):
             "Operating Systems": "💻",
             "JavaScript": "⚡",
             "HTML & CSS": "🎨",
-            "HR Interview": "🤝"
+            "HR Interview": "🤝",
+            "⚡ Demo Mode": "⚡"
         }
 
         row, col = 0, 0
@@ -64,8 +65,8 @@ class DomainScreen(ctk.CTkFrame):
                 grid_frame,
                 text=f"{icon}  {domain}",
                 font=ctk.CTkFont(family="Arial", size=15, weight="bold"),
-                width=200,
-                height=80,
+                width=180,
+                height=70,
                 corner_radius=12,
                 fg_color="white",
                 text_color="#1A1A2E",
@@ -74,11 +75,11 @@ class DomainScreen(ctk.CTkFrame):
                 border_color="#D0D8F0",
                 command=lambda d=domain: self.select_domain(d)
             )
-            btn.grid(row=row, column=col, padx=15, pady=15)
+            btn.grid(row=row, column=col, padx=10, pady=10)
             self.domain_buttons[domain] = btn
 
             col += 1
-            if col == 2:
+            if col == 3:
                 col = 0
                 row += 1
 
