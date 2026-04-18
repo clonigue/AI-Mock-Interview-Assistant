@@ -1,7 +1,8 @@
 import customtkinter as ctk
+import threading
 from config import QUESTIONS_PER_SESSION
 from core.question_engine import generate_question
-import threading
+from core.voice_engine import VoiceRecorder
 
 class PlaceholderTextbox(ctk.CTkTextbox):
     def __init__(self, master, placeholder="", **kwargs):
@@ -49,6 +50,8 @@ class InterviewScreen(ctk.CTkFrame):
         self.asked_questions = []
         self.current_question = ""
         self.answers = []
+        self.recorder = VoiceRecorder()
+        self.is_recording = False
 
         self.build_ui()
         self.after(100, self.load_next_question)
@@ -132,14 +135,14 @@ class InterviewScreen(ctk.CTkFrame):
 
         # ── Answer Box ───────────────────────────
         self.answer_box = PlaceholderTextbox(
-        self,
-        placeholder="Type your answer here...",
-        height=130,
-        corner_radius=12,
-        border_width=1,
-        border_color="#D0D8FF",
-        font=ctk.CTkFont(family="Arial", size=13),
-        fg_color="white",
+            self,
+            placeholder="Type your answer here...",
+            height=130,
+            corner_radius=12,
+            border_width=1,
+            border_color="#D0D8FF",
+            font=ctk.CTkFont(family="Arial", size=13),
+            fg_color="white",
         )
         self.answer_box.pack(fill="x", padx=30, pady=(5, 10))
 
@@ -235,7 +238,86 @@ class InterviewScreen(ctk.CTkFrame):
             self.load_next_question()
 
     def use_mic(self):
-        self.status_label.configure(text="🎤 Mic feature coming in Phase 3!")
+        if not self.is_recording:
+            self.start_recording()
+        else:
+            self.stop_recording()
+
+    def start_recording(self):
+        """Start voice recording."""
+        self.is_recording = True
+        self.mic_btn.configure(
+            text="⏹  Stop",
+            fg_color="#FF4444",
+            hover_color="#CC0000",
+            text_color="white",
+            border_width=0
+        )
+        self.status_label.configure(text="🎤 Recording... 0s (silence will auto-stop)")
+        self.answer_box.reset()
+        self.answer_box.configure(text_color="#1A1A2E")
+        self.answer_box.delete("1.0", "end")
+        self.answer_box.insert("1.0", "🎤 Listening...")
+        self.next_btn.configure(state="disabled")
+
+        self._recording_seconds = 0
+        self._update_recording_timer()
+
+        self.recorder.start_recording(self.on_recording_complete)
+
+    def _update_recording_timer(self):
+        if self.is_recording:
+            self._recording_seconds += 1
+            self.status_label.configure(
+                text=f"🎤 Recording... {self._recording_seconds}s (silence will auto-stop)"
+            )
+            self.after(1000, self._update_recording_timer)
+
+    def stop_recording(self):
+        """Manually stop recording."""
+        self.recorder.stop_recording()
+        self.is_recording = False
+        self.mic_btn.configure(
+            text="🎤  Mic",
+            fg_color="white",
+            hover_color="#E0E8FF",
+            text_color="#2B5CE6",
+            border_width=2
+        )
+        self.status_label.configure(text="⏳ Transcribing your answer...")
+        self.answer_box.delete("1.0", "end")
+        self.answer_box.configure(text_color="#AAAAAA")
+        self.answer_box.insert("1.0", "⏳ Transcribing your answer...")
+
+    def on_recording_complete(self, text, error):
+        """Called when recording and transcription is done."""
+        self.after(0, lambda: self._update_after_recording(text, error))
+
+    def _update_after_recording(self, text, error):
+        """Update UI after recording completes."""
+        self.is_recording = False
+
+        # Reset mic button
+        self.mic_btn.configure(
+            text="🎤  Mic",
+            fg_color="white",
+            hover_color="#E0E8FF",
+            text_color="#2B5CE6",
+            border_width=2
+        )
+        self.next_btn.configure(state="normal")
+
+        if text and not error:
+            # Show transcribed text
+            self.answer_box.delete("1.0", "end")
+            self.answer_box.configure(text_color="#1A1A2E")
+            self.answer_box.insert("1.0", text)
+            self.status_label.configure(text="✅ Answer transcribed!")
+        else:
+            self.answer_box.reset()
+            self.status_label.configure(
+                text=f"❌ Transcription failed. Please type your answer."
+            )
 
     def finish_interview(self):
         report_data = {
