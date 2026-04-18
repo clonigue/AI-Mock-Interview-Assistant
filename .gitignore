@@ -6,3 +6,5 @@ __pycache__/
 models/
 *.db
 .DS_Store
+data/reports/
+data/sessions/

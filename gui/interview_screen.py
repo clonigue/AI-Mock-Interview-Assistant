@@ -13,34 +13,42 @@ class PlaceholderTextbox(ctk.CTkTextbox):
         self.placeholder = placeholder
         self.placeholder_color = "#AAAAAA"
         self.default_color = "#1A1A2E"
-        self._placeholder_active = False
-        self.set_placeholder()
-        self.bind("<FocusIn>", self.on_focus_in)
-        self.bind("<FocusOut>", self.on_focus_out)
+        self._placeholder_active = True
+        self._set_placeholder()
+        self.bind("<FocusIn>", self._on_focus_in)
+        self.bind("<FocusOut>", self._on_focus_out)
+        self.bind("<Key>", self._on_key)
 
-    def set_placeholder(self):
+    def _set_placeholder(self):
         self.delete("1.0", "end")
         self.insert("1.0", self.placeholder)
         self.configure(text_color=self.placeholder_color)
         self._placeholder_active = True
 
-    def on_focus_in(self, event):
+    def _on_focus_in(self, event):
         if self._placeholder_active:
             self.delete("1.0", "end")
             self.configure(text_color=self.default_color)
             self._placeholder_active = False
 
-    def on_focus_out(self, event):
+    def _on_focus_out(self, event):
         if self.get("1.0", "end-1c").strip() == "":
-            self.set_placeholder()
+            self._set_placeholder()
+
+    def _on_key(self, event):
+        if self._placeholder_active:
+            self.delete("1.0", "end")
+            self.configure(text_color=self.default_color)
+            self._placeholder_active = False
 
     def get_answer(self):
-        if self._placeholder_active:
+        content = self.get("1.0", "end-1c").strip()
+        if self._placeholder_active or content == self.placeholder:
             return ""
-        return self.get("1.0", "end-1c").strip()
+        return content
 
     def reset(self):
-        self.set_placeholder()
+        self._set_placeholder()
 
 class InterviewScreen(ctk.CTkFrame):
     def __init__(self, parent, domain):
@@ -320,6 +328,7 @@ class InterviewScreen(ctk.CTkFrame):
             "domain": self.domain
         })
 
+
         if self.current_question_num >= QUESTIONS_PER_SESSION:
             self.finish_interview()
         else:
@@ -396,7 +405,7 @@ class InterviewScreen(ctk.CTkFrame):
         self.next_btn.configure(state="normal")
 
         if text and not error:
-            # Show transcribed text
+            self.answer_box._placeholder_active = False
             self.answer_box.delete("1.0", "end")
             self.answer_box.configure(text_color="#1A1A2E")
             self.answer_box.insert("1.0", text)
@@ -465,13 +474,17 @@ class InterviewScreen(ctk.CTkFrame):
         self.after(33, self._update_webcam_preview)        
 
     def finish_interview(self):
+        emotion_log = self.face_analyzer.get_emotion_log()
+        dominant = self.face_analyzer.get_dominant_emotion()
+        print(f"DEBUG emotion_log count: {len(emotion_log)}")
+        print(f"DEBUG dominant: {dominant}")
         self.stop_webcam()
         report_data = {
             "domain": self.domain,
             "total_questions": QUESTIONS_PER_SESSION,
             "answers": self.answers,
-            "emotion_log": self.face_analyzer.get_emotion_log(),
-            "dominant_emotion": self.face_analyzer.get_dominant_emotion()
+            "emotion_log": emotion_log,
+            "dominant_emotion": dominant
         }
         self.parent.show_report_screen(report_data)
 
