@@ -22,6 +22,12 @@ PrepAI is a desktop application that simulates a real technical interview enviro
 
 ---
 
+## Screenshots
+
+| Interview Screen | Results Screen |
+|---|---|
+| ![Interview](screenshots/interview-screen.png) | ![Results](screenshots/results-screen.png) |
+
 ## Features
 
 - **AI-generated questions** — domain-specific questions generated fresh every session via Groq API
